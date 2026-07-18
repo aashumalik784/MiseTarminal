@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#000000"
+    android:padding="8dp">
+
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <TextView
+            android:id="@+id/outputText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#33FF33"
+            android:fontFamily="monospace"
+            android:textSize="13sp"
+            android:text="Mise Tarminal\n" />
+    </ScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="$ "
+            android:textColor="#33FF33"
+            android:fontFamily="monospace"
+            android:textSize="13sp" />
+
+        <EditText
+            android:id="@+id/inputField"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@null"
+            android:textColor="#33FF33"
+            android:fontFamily="monospace"
+            android:textSize="13sp"
+            android:inputType="text"
+            android:imeOptions="actionGo"
+            android:singleLine="true" />
+    </LinearLayout>
+
+</LinearLayout>
