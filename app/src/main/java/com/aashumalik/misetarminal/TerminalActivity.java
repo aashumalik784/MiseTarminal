@@ -8,7 +8,7 @@ import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
+import android.app.Activity;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -21,7 +21,7 @@ import java.io.OutputStream;
  * shell (/system/bin/sh) and streams its output into a scrolling
  * text view, similar in spirit to a basic terminal emulator.
  */
-public class TerminalActivity extends AppCompatActivity {
+public class TerminalActivity extends Activity {
 
     private TextView outputText;
     private EditText inputField;

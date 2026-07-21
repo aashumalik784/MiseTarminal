@@ -1,5 +1,5 @@
 <resources>
-    <style name="Theme.MiseTarminal" parent="Theme.AppCompat.NoActionBar">
+    <style name="Theme.MiseTarminal" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@android:color/black</item>
     </style>
 </resources>
