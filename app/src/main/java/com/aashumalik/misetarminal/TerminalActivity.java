@@ -9,12 +9,15 @@ import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class TerminalActivity extends Activity {
 
@@ -22,6 +25,9 @@ public class TerminalActivity extends Activity {
     private EditText inputField;
     private ScrollView scrollView;
     private OutputStream shellInput;
+
+    private static final String ROOTFS_URL =
+            "https://cdimage.ubuntu.com/ubuntu-base/releases/24.04/release/ubuntu-base-24.04-base-arm64.tar.gz";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,19 +55,23 @@ public class TerminalActivity extends Activity {
     private void runSetupAndShell() {
         try {
             File baseDir = getFilesDir();
-            File assetsCopyDir = new File(baseDir, "assets_copy");
-            assetsCopyDir.mkdirs();
+            String nativeDir = getApplicationInfo().nativeLibraryDir;
 
-            copyAsset("mise-terminal/prebuilt/proot-arm64", new File(assetsCopyDir, "proot-arm64"));
-            copyAsset("mise-terminal/prebuilt/libtalloc.so.2", new File(assetsCopyDir, "libtalloc.so.2"));
-            copyAsset("mise-terminal/prebuilt/libandroid-shmem.so", new File(assetsCopyDir, "libandroid-shmem.so"));
+            File rootfsTar = new File(baseDir, "ubuntu-base.tar.gz");
+            File rootfsDir = new File(baseDir, "rootfs");
+            if (!new File(rootfsDir, "bin").exists() && !rootfsTar.exists()) {
+                appendOutput("Downloading Ubuntu base rootfs...\n");
+                downloadFile(ROOTFS_URL, rootfsTar);
+                appendOutput("Download complete.\n");
+            }
 
             File scriptFile = new File(baseDir, "bootstrap.sh");
             copyAsset("mise-terminal/bootstrap.sh", scriptFile);
             scriptFile.setExecutable(true);
 
             appendOutput("Mise Tarminal starting setup...\n");
-            ProcessBuilder pb = new ProcessBuilder("/system/bin/sh", scriptFile.getAbsolutePath(), baseDir.getAbsolutePath());
+            ProcessBuilder pb = new ProcessBuilder("/system/bin/sh",
+                    scriptFile.getAbsolutePath(), baseDir.getAbsolutePath(), nativeDir);
             pb.redirectErrorStream(true);
             Process process = pb.start();
             shellInput = process.getOutputStream();
@@ -79,8 +89,25 @@ public class TerminalActivity extends Activity {
         }
     }
 
+    private void downloadFile(String urlStr, File outFile) throws Exception {
+        URL url = new URL(urlStr);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setInstanceFollowRedirects(true);
+        InputStream in = new BufferedInputStream(conn.getInputStream());
+        FileOutputStream out = new FileOutputStream(outFile);
+        byte[] buffer = new byte[8192];
+        int len;
+        long total = 0;
+        while ((len = in.read(buffer)) > 0) {
+            out.write(buffer, 0, len);
+            total += len;
+        }
+        in.close();
+        out.close();
+        conn.disconnect();
+    }
+
     private void copyAsset(String assetPath, File outFile) throws Exception {
-        if (outFile.exists() && outFile.length() > 0) return;
         InputStream in = getAssets().open(assetPath);
         FileOutputStream out = new FileOutputStream(outFile);
         byte[] buffer = new byte[4096];

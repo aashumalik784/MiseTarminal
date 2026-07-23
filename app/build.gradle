@@ -4,6 +4,12 @@ android {
     namespace 'com.aashumalik.misetarminal'
     compileSdk 34
 
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
     defaultConfig {
         applicationId "com.aashumalik.misetarminal"
         minSdk 24
