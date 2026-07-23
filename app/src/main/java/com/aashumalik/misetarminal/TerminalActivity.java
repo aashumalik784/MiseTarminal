@@ -27,7 +27,7 @@ public class TerminalActivity extends Activity {
     private OutputStream shellInput;
 
     private static final String ROOTFS_URL =
-            "https://cdimage.ubuntu.com/ubuntu-base/releases/24.04/release/ubuntu-base-24.04-base-arm64.tar.gz";
+            "https://cdimage.ubuntu.com/ubuntu-base/releases/24.04.4/release/ubuntu-base-24.04.4-base-arm64.tar.gz";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
