@@ -41,10 +41,9 @@ fi
 echo "${YELLOW}Installing development tools (this takes a while)...${RESET}"
 "$PROOT_BIN" --link2symlink -0 -r "$ROOTFS_DIR" \
     -b /dev -b /proc -b /sys \
-    -w /root /usr/bin/env -i \
-    HOME=/root \
-    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
-    /bin/bash -c "
+    -w /root /bin/bash -c "
+        export HOME=/root
+        export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
         echo 'nameserver 8.8.8.8' > /etc/resolv.conf
         apt update -y
         DEBIAN_FRONTEND=noninteractive apt install -y python3 openjdk-21-jdk g++ nodejs npm php golang-go rustc ruby kotlin nginx mariadb-server postgresql curl unzip
