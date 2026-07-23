@@ -10,6 +10,9 @@ MARKER="$BASE_DIR/.mise-initialized"
 ROOTFS_DIR="$BASE_DIR/rootfs"
 ROOTFS_TAR="$BASE_DIR/ubuntu-base.tar.gz"
 PROOT_BIN="$NATIVE_DIR/libproot.so"
+TMPDIR="$BASE_DIR/tmp"
+mkdir -p "$TMPDIR"
+export PROOT_TMP_DIR="$TMPDIR"
 
 if [ -f "$MARKER" ]; then
     echo "${GREEN}Mise Tarminal already configured!${RESET}"
