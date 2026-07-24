@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     namespace 'com.aashumalik.misetarminal'
-    compileSdk 34
+    compileSdk 28
 
     packagingOptions {
         jniLibs {
@@ -13,7 +13,7 @@ android {
     defaultConfig {
         applicationId "com.aashumalik.misetarminal"
         minSdk 24
-        targetSdk 34
+        targetSdk 28
         versionCode 1
         versionName "0.1.0"
     }
