@@ -36,6 +36,7 @@ if [ ! -d "$ROOTFS_DIR/bin" ]; then
     tar -xf "$ROOTFS_TAR" -C "$ROOTFS_DIR"
     rm -f "$ROOTFS_TAR"
     echo "${GREEN}Rootfs ready!${RESET}"
+ls -la "$ROOTFS_DIR/bin/bash" "$ROOTFS_DIR/usr/bin/bash" "$ROOTFS_DIR/bin/sh" 2>&1
 fi
 
 echo "${YELLOW}Installing development tools (this takes a while)...${RESET}"
