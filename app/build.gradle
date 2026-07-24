@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     namespace 'com.aashumalik.misetarminal'
-    compileSdk 28
+    compileSdk 34
 
     packagingOptions {
         jniLibs {
