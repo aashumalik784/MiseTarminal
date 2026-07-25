@@ -20,6 +20,7 @@ if [ -f "$MARKER" ]; then
 fi
 
 export LD_LIBRARY_PATH="$NATIVE_DIR"
+export LD_PRELOAD="$NATIVE_DIR/libtermux-exec-preload.so"
 mkdir -p "$ROOTFS_DIR"
 
 if [ ! -x "$PROOT_BIN" ]; then
