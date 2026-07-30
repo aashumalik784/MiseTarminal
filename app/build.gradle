@@ -13,7 +13,7 @@ android {
     defaultConfig {
         applicationId "com.aashumalik.misetarminal"
         minSdk 24
-        targetSdk 28
+        targetSdk 34
         versionCode 1
         versionName "0.1.0"
     }

@@ -9,25 +9,24 @@ import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 
+/**
+ * Mise Tarminal - a small original terminal-style shell runner.
+ * Launches the device's own shell (/system/bin/sh) and streams
+ * its output into a scrolling text view.
+ */
 public class TerminalActivity extends Activity {
 
     private TextView outputText;
     private EditText inputField;
     private ScrollView scrollView;
-    private OutputStream shellInput;
 
-    private static final String ROOTFS_URL =
-            "https://cdimage.ubuntu.com/ubuntu-base/releases/24.04.4/release/ubuntu-base-24.04.4-base-arm64.tar.gz";
+    private Process shellProcess;
+    private OutputStream shellInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +38,8 @@ public class TerminalActivity extends Activity {
         scrollView = findViewById(R.id.scrollView);
         outputText.setMovementMethod(new ScrollingMovementMethod());
 
+        startShell();
+
         inputField.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_GO
                     || (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
@@ -48,86 +49,43 @@ public class TerminalActivity extends Activity {
             }
             return false;
         });
-
-        new Thread(this::runSetupAndShell).start();
     }
 
-    private void runSetupAndShell() {
+    private void startShell() {
         try {
-            File baseDir = getFilesDir();
-            String nativeDir = getApplicationInfo().nativeLibraryDir;
-
-            File rootfsTar = new File(baseDir, "ubuntu-base.tar.gz");
-            File rootfsDir = new File(baseDir, "rootfs");
-            if (!new File(rootfsDir, "bin").exists() && !rootfsTar.exists()) {
-                appendOutput("Downloading Ubuntu base rootfs...\n");
-                downloadFile(ROOTFS_URL, rootfsTar);
-                appendOutput("Download complete.\n");
-            }
-
-            File scriptFile = new File(baseDir, "bootstrap.sh");
-            copyAsset("mise-terminal/bootstrap.sh", scriptFile);
-            scriptFile.setExecutable(true);
-
-            appendOutput("Mise Tarminal starting setup...\n");
-            ProcessBuilder pb = new ProcessBuilder("/system/bin/sh",
-                    scriptFile.getAbsolutePath(), baseDir.getAbsolutePath(), nativeDir);
+            ProcessBuilder pb = new ProcessBuilder("/system/bin/sh");
             pb.redirectErrorStream(true);
-            Process process = pb.start();
-            shellInput = process.getOutputStream();
+            pb.directory(new File(getFilesDir().getAbsolutePath()));
+            shellProcess = pb.start();
+            shellInput = shellProcess.getOutputStream();
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                appendOutput(line + "\n");
-            }
-            process.waitFor();
+            Thread readerThread = new Thread(() -> {
+                try {
+                    BufferedReader reader = new BufferedReader(
+                            new InputStreamReader(shellProcess.getInputStream()));
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        appendOutput(line + "\n");
+                    }
+                } catch (Exception e) {
+                    appendOutput("[shell ended: " + e.getMessage() + "]\n");
+                }
+            });
+            readerThread.setDaemon(true);
+            readerThread.start();
 
-            appendOutput("\nSetup finished. You can now enter commands below.\n");
         } catch (Exception e) {
-            appendOutput("Setup error: " + e.getMessage() + "\n");
+            appendOutput("Failed to start shell: " + e.getMessage() + "\n");
         }
-    }
-
-    private void downloadFile(String urlStr, File outFile) throws Exception {
-        URL url = new URL(urlStr);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setInstanceFollowRedirects(true);
-        InputStream in = new BufferedInputStream(conn.getInputStream());
-        FileOutputStream out = new FileOutputStream(outFile);
-        byte[] buffer = new byte[8192];
-        int len;
-        long total = 0;
-        while ((len = in.read(buffer)) > 0) {
-            out.write(buffer, 0, len);
-            total += len;
-        }
-        in.close();
-        out.close();
-        conn.disconnect();
-    }
-
-    private void copyAsset(String assetPath, File outFile) throws Exception {
-        InputStream in = getAssets().open(assetPath);
-        FileOutputStream out = new FileOutputStream(outFile);
-        byte[] buffer = new byte[4096];
-        int len;
-        while ((len = in.read(buffer)) > 0) {
-            out.write(buffer, 0, len);
-        }
-        in.close();
-        out.close();
     }
 
     private void sendCommand(String command) {
         appendOutput("$ " + command + "\n");
         try {
-            if (shellInput != null) {
-                shellInput.write((command + "\n").getBytes());
-                shellInput.flush();
-            }
+            shellInput.write((command + "\n").getBytes());
+            shellInput.flush();
         } catch (Exception e) {
-            appendOutput("Error: " + e.getMessage() + "\n");
+            appendOutput("Error sending command: " + e.getMessage() + "\n");
         }
     }
 
@@ -136,5 +94,13 @@ public class TerminalActivity extends Activity {
             outputText.append(text);
             scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (shellProcess != null) {
+            shellProcess.destroy();
+        }
     }
 }
