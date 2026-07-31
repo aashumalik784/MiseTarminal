@@ -44,7 +44,7 @@
             android:textColor="#33FF33"
             android:fontFamily="monospace"
             android:textSize="13sp"
-            android:inputType="text"
+            android:inputType="textNoSuggestions|textVisiblePassword"
             android:imeOptions="actionGo"
             android:singleLine="true" />
     </LinearLayout>
